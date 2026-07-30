@@ -1,0 +1,50 @@
+# Build output
+**/bin/
+**/obj/
+
+# Rider
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# .NET
+TestResults/
+artifacts/
+
+# NuGet
+*.nupkg
+packages/
+!packages/build/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Android
+*.apk
+*.aab
+*.ap_
+
+# Generated static web assets
+**/wwwroot/_framework/
+**/wwwroot/_content/
+
+# Local environment
+.env
+.env.*
+
+# Temporary files
+*.tmp
+*.cache
