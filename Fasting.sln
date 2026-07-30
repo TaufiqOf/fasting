@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fasting", "Fasting\Fasting.csproj", "{9EDE4A05-E6C2-4D62-AA36-33F9867111D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fasting.Shared", "Fasting.Shared\Fasting.Shared.csproj", "{16490C90-788D-4F8A-BAA3-D204EF39DA26}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fasting.Web", "Fasting.Web\Fasting.Web.csproj", "{3E1DA484-F0DB-43B3-B620-68BCDA1AC5D4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9EDE4A05-E6C2-4D62-AA36-33F9867111D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EDE4A05-E6C2-4D62-AA36-33F9867111D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EDE4A05-E6C2-4D62-AA36-33F9867111D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EDE4A05-E6C2-4D62-AA36-33F9867111D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16490C90-788D-4F8A-BAA3-D204EF39DA26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16490C90-788D-4F8A-BAA3-D204EF39DA26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16490C90-788D-4F8A-BAA3-D204EF39DA26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16490C90-788D-4F8A-BAA3-D204EF39DA26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E1DA484-F0DB-43B3-B620-68BCDA1AC5D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E1DA484-F0DB-43B3-B620-68BCDA1AC5D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E1DA484-F0DB-43B3-B620-68BCDA1AC5D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E1DA484-F0DB-43B3-B620-68BCDA1AC5D4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
