@@ -15,7 +15,8 @@ public static class MauiProgram
 
         // Add device-specific services used by the Fasting.Shared project
         builder.Services.AddSingleton<IFormFactor, FormFactor>();
-
+        builder.Services.AddSingleton<FastingManager>();
+        builder.Services.AddSingleton<IFastingStateStore, MauiFastingStateStore>();
         builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG

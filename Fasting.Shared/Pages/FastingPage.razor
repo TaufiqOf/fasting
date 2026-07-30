@@ -1,0 +1,258 @@
+﻿@page "/fasting"
+
+@using System.Globalization
+@using Fasting.Models
+@using Fasting.Shared.Services
+
+
+@implements IDisposable
+
+<PageTitle>Fasting</PageTitle>
+
+<div class="container py-3">
+
+    <h1 class="mb-4">Fasting</h1>
+
+    @if (!FastingManager.HasActiveCycle)
+    {
+        <div class="card">
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    Start a fasting cycle
+                </h5>
+
+                <div class="mb-3">
+                    <label for="fastingType"
+                           class="form-label">
+                        Fasting type
+                    </label>
+
+                    <select id="fastingType"
+                            class="form-select"
+                            @bind="SelectedTypeId">
+
+                        @foreach (FastingType type in Types)
+                        {
+                            <option value="@type.Id">
+                                @type.Name - @type.Description
+                            </option>
+                        }
+
+                    </select>
+                </div>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        @onclick="StartFasting">
+                    Start Fasting
+                </button>
+
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body">
+
+                <div class="d-flex
+                            justify-content-between
+                            align-items-start
+                            gap-3
+                            mb-3">
+
+                    <div>
+                        <h4 class="card-title mb-1">
+                            @PhaseTitle
+                        </h4>
+
+                        <span class="badge
+                                     @(FastingManager.IsFasting
+                                         ? "bg-primary"
+                                         : "bg-success")">
+                            @FastingManager.ActiveType?.Name
+                        </span>
+                    </div>
+
+                    <div class="text-end">
+                        <div class="fs-4 fw-bold">
+                            @FastingManager.ProgressPercentage.ToString("0.0")%
+                        </div>
+
+                        <small class="text-muted">
+                            completed
+                        </small>
+                    </div>
+
+                </div>
+
+                @if (!IsEditingStartTime)
+                {
+                    <div class="d-flex
+                                align-items-center
+                                flex-wrap
+                                gap-2
+                                mb-2">
+
+                        <span>
+                            @StartLabel:
+                            <strong>
+                                @ActiveStartTimeText
+                            </strong>
+                        </span>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                @onclick="BeginEditStartTime">
+
+                            <span class="bi bi-pencil-fill me-1"
+                                  aria-hidden="true">
+                            </span>
+
+                            Edit
+                        </button>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="border rounded p-3 mb-3">
+
+                        <label for="activeStartTime"
+                               class="form-label">
+                            Start date and time
+                        </label>
+
+                        <input id="activeStartTime"
+                               type="datetime-local"
+                               class="form-control"
+                               value="@EditableStartLocalText"
+                               @oninput="HandleStartTimeInput" />
+
+                        @if (!string.IsNullOrWhiteSpace(EditError))
+                        {
+                            <div class="text-danger mt-2">
+                                @EditError
+                            </div>
+                        }
+
+                        <div class="d-flex gap-2 mt-3">
+
+                            <button type="button"
+                                    class="btn btn-primary btn-sm"
+                                    @onclick="SaveStartTime">
+                                Save
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    @onclick="CancelEditStartTime">
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+                }
+
+                <p class="mb-3">
+                    @FinishLabel:
+                    <strong>@FinishTimeText</strong>
+                </p>
+
+                <div class="progress"
+                     role="progressbar"
+                     aria-label="@PhaseTitle progress"
+                     aria-valuenow="@FastingManager.ProgressPercentage"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     style="height: 1.5rem;">
+
+                    <div class="progress-bar
+                                progress-bar-striped
+                                progress-bar-animated
+                                @(FastingManager.IsEating
+                                    ? "bg-success"
+                                    : "")"
+                         style="width: @(ProgressWidth)%">
+
+                        @FastingManager.ProgressPercentage.ToString("0")%
+
+                    </div>
+                </div>
+
+                <div class="text-center my-4">
+
+                    @if (FastingManager.IsPhaseCompleted)
+                    {
+                        @if (FastingManager.IsFasting)
+                        {
+                            <div class="alert alert-success mb-0">
+                                Your fasting target has been reached.
+                                End the fast when you are ready to eat.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-primary mb-0">
+                                Your eating period has finished.
+                                Start your next fast when you are ready.
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="display-6 fw-bold">
+                            @RemainingTimeText
+                        </div>
+
+                        <div class="text-muted">
+                            @RemainingLabel
+                        </div>
+                    }
+
+                </div>
+
+                @if (FastingManager.IsFasting)
+                {
+                    <div class="d-grid d-sm-flex gap-2">
+
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                @onclick="CancelFast">
+                            Cancel Fast
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-success"
+                                @onclick="EndFast">
+                            End Fast
+                        </button>
+
+                    </div>
+                }
+                else if (FastingManager.IsEating)
+                {
+                    <div class="d-grid d-sm-flex gap-2">
+
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                @onclick="CancelEatingPeriod">
+                            Cancel Cycle
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-primary"
+                                @onclick="StartNextFast">
+                            Start Fast
+                        </button>
+
+                    </div>
+                }
+
+            </div>
+        </div>
+    }
+
+</div>
