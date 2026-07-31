@@ -1,0 +1,76 @@
+.fasting-calendar {
+    max-width: 700px;
+    margin-inline: auto;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.35rem;
+}
+
+.calendar-weekdays {
+    margin-bottom: 0.35rem;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.calendar-day {
+    position: relative;
+    min-height: 70px;
+    padding: 0.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    background-color: var(--bs-body-bg);
+}
+
+.calendar-day.outside-month {
+    opacity: 0.3;
+}
+
+.calendar-day.today {
+    border: 2px solid #2196f3;
+}
+
+.calendar-day.target-reached {
+    color: white;
+    border-color: #198754;
+    background-color: #198754;
+}
+
+.day-number {
+    font-weight: 600;
+}
+
+.completed-indicator {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.35rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.calendar-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.legend-completed {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    background-color: #198754;
+}

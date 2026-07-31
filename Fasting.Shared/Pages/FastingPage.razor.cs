@@ -284,6 +284,98 @@ public partial class FastingPage : IDisposable
             $"{duration.Seconds:00}";
     }
 
+    private DateTime DisplayedMonth { get; set; } =
+        new(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+    private static string[] WeekdayNames =>
+    [
+        "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
+    ];
+
+    private IEnumerable<CalendarDay> CalendarDays
+    {
+        get
+        {
+            DateTime firstDay = DisplayedMonth;
+
+            int daysBeforeMonth =
+                ((int)firstDay.DayOfWeek + 6) % 7;
+
+            DateTime calendarStart =
+                firstDay.AddDays(-daysBeforeMonth);
+
+            for (int index = 0; index < 42; index++)
+            {
+                DateTime date = calendarStart.AddDays(index);
+
+                List<FastingHistoryEntry> completedFasts = History
+                    .Where(entry =>
+                        entry.TargetReached &&
+                        DateOnly.FromDateTime(entry.EndedAt.LocalDateTime) ==
+                        DateOnly.FromDateTime(date))
+                    .ToList();
+
+                yield return new CalendarDay
+                {
+                    Date = date,
+                    IsCurrentMonth = date.Month == DisplayedMonth.Month &&
+                                     date.Year == DisplayedMonth.Year,
+                    IsToday = date.Date == DateTime.Today,
+                    CompletedFasts = completedFasts
+                };
+            }
+        }
+    }
+
+    private void ShowPreviousMonth()
+    {
+        DisplayedMonth = DisplayedMonth.AddMonths(-1);
+    }
+
+    private void ShowNextMonth()
+    {
+        DisplayedMonth = DisplayedMonth.AddMonths(1);
+    }
+
+    private static string GetDayCssClass(CalendarDay day)
+    {
+        List<string> classes = ["calendar-day"];
+
+        if (!day.IsCurrentMonth)
+        {
+            classes.Add("outside-month");
+        }
+
+        if (day.IsToday)
+        {
+            classes.Add("today");
+        }
+
+        if (day.TargetReached)
+        {
+            classes.Add("target-reached");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private static string GetDayTooltip(CalendarDay day)
+    {
+        if (!day.TargetReached)
+        {
+            return day.Date.ToString("D", CultureInfo.CurrentCulture);
+        }
+
+        string fasts = string.Join(
+            ", ",
+            day.CompletedFasts.Select(entry =>
+                $"{entry.FastingTypeName}: {FormatHistoryDuration(entry.Duration)}"));
+
+        return $"{day.Date:D} — {fasts}";
+    }
+
+    
+    
     public void Dispose()
     {
         FastingManager.StateChanged -=

@@ -1,4 +1,5 @@
 using Fasting.Shared.Services;
+using Microsoft.Maui.Devices;
 
 namespace Fasting.Services;
 

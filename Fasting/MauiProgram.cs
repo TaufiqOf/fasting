@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Fasting.Shared.Services;
 using Fasting.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
 
 namespace Fasting;
 
@@ -17,6 +20,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IFormFactor, FormFactor>();
         builder.Services.AddSingleton<FastingManager>();
         builder.Services.AddSingleton<IFastingStateStore, MauiFastingStateStore>();
+        builder.Services.AddScoped<IUserProfileStore, UserProfileStore>();
+
         builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG

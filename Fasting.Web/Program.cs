@@ -10,10 +10,8 @@ builder.Services.AddRazorComponents()
 
 // Add device-specific services used by the Fasting.Shared project
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
-builder.Services.AddScoped<
-    IFastingStateStore,
-    WebFastingStateStore>();
-
+builder.Services.AddScoped<IFastingStateStore,WebFastingStateStore>();
+builder.Services.AddScoped<IUserProfileStore, WebUserProfileStore>();
 builder.Services.AddScoped<FastingManager>();
 
 var app = builder.Build();
