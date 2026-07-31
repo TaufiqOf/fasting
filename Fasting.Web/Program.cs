@@ -12,6 +12,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddScoped<IFastingStateStore,WebFastingStateStore>();
 builder.Services.AddScoped<IUserProfileStore, WebUserProfileStore>();
+builder.Services.AddScoped<IWeightHistoryStore, WebWeightHistoryStore>();
 builder.Services.AddScoped<FastingManager>();
 
 var app = builder.Build();

@@ -1,0 +1,388 @@
+@page "/weight"
+
+@using System.Globalization
+@using Fasting.Models
+
+<PageTitle>Weight Tracker</PageTitle>
+
+<div class="container py-4">
+
+    <div class="d-flex
+                flex-column
+                flex-md-row
+                justify-content-between
+                align-items-md-center
+                gap-3
+                mb-4">
+
+        <div>
+            <h1 class="h2 mb-1">Weight Tracker</h1>
+
+            <p class="text-muted mb-0">
+                Record your weight and monitor your progress.
+            </p>
+        </div>
+
+        @if (LatestEntry is not null)
+        {
+            <div class="text-md-end">
+                <div class="text-muted small">
+                    Current weight
+                </div>
+
+                <div class="fs-3 fw-bold">
+                    @LatestEntry.WeightKg.ToString("0.0") kg
+                </div>
+            </div>
+        }
+
+    </div>
+
+    @if (!IsLoaded)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"
+                 role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+
+            <p class="text-muted mt-3">
+                Loading weight history...
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            <div class="col-12 col-lg-5">
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+
+                        <h2 class="h5 mb-3">
+                            Record weight
+                        </h2>
+
+                        <EditForm Model="Form"
+                                  OnValidSubmit="SaveWeightAsync">
+
+                            <DataAnnotationsValidator />
+
+                            <label for="weightDateTime" class="form-label">
+                                Date and time
+                            </label>
+
+                            <input id="weightDateTime"
+                                   type="datetime-local"
+                                   class="form-control"
+                                   @bind="Form.RecordedAt"
+                                   @bind:format="yyyy-MM-ddTHH:mm" />
+
+                                <ValidationMessage
+                                    For="@(() => Form.RecordedAt)" />
+
+                            <div class="mb-3">
+                                <label for="weight"
+                                       class="form-label">
+                                    Weight
+                                </label>
+
+                                <div class="input-group">
+                                    <InputNumber id="weight"
+                                                 class="form-control"
+                                                 step="0.1"
+                                                 @bind-Value="Form.WeightKg" />
+
+                                    <span class="input-group-text">
+                                        kg
+                                    </span>
+                                </div>
+
+                                <ValidationMessage
+                                    For="@(() => Form.WeightKg)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notes"
+                                       class="form-label">
+                                    Notes
+                                    <span class="text-muted">
+                                        (optional)
+                                    </span>
+                                </label>
+
+                                <InputTextArea id="notes"
+                                               class="form-control"
+                                               rows="3"
+                                               placeholder="Morning weight, after workout..."
+                                               @bind-Value="Form.Notes" />
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(StatusMessage))
+                            {
+                                <div class="alert
+                                            @(SaveSucceeded
+                                                ? "alert-success"
+                                                : "alert-danger")">
+
+                                    @StatusMessage
+                                </div>
+                            }
+
+                            <button type="submit"
+                                    class="btn btn-primary w-100"
+                                    disabled="@IsSaving">
+
+                                @if (IsSaving)
+                                {
+                                    <span class="spinner-border
+                                                 spinner-border-sm
+                                                 me-2">
+                                    </span>
+
+                                    <span>Saving...</span>
+                                }
+                                else
+                                {
+                                    <span class="bi
+                                                 bi-plus-circle-fill
+                                                 me-2">
+                                    </span>
+
+                                    <span>Record Weight</span>
+                                }
+
+                            </button>
+
+                        </EditForm>
+
+                    </div>
+                </div>
+
+                @if (LatestEntry is not null)
+                {
+                    <div class="card border-0 shadow-sm mt-4">
+                        <div class="card-body">
+
+                            <h2 class="h5 mb-3">
+                                Weight summary
+                            </h2>
+
+                            <div class="row g-3">
+
+                                <div class="col-6">
+                                    <div class="summary-box">
+                                        <div class="text-muted small">
+                                            Current
+                                        </div>
+
+                                        <strong>
+                                            @LatestEntry.WeightKg.ToString("0.0") kg
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="summary-box">
+                                        <div class="text-muted small">
+                                            Starting
+                                        </div>
+
+                                        <strong>
+                                            @StartingWeightText
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="summary-box">
+                                        <div class="text-muted small">
+                                            Change
+                                        </div>
+
+                                        <strong class="@WeightChangeCss">
+                                            @WeightChangeText
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="summary-box">
+                                        <div class="text-muted small">
+                                            Target
+                                        </div>
+
+                                        <strong>
+                                            @TargetWeightText
+                                        </strong>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            @if (TargetWeightKg is > 0)
+                            {
+                                <div class="mt-4">
+
+                                    <div class="d-flex
+                                                justify-content-between
+                                                mb-2">
+
+                                        <span class="small text-muted">
+                                            Target progress
+                                        </span>
+
+                                        <span class="small fw-semibold">
+                                            @TargetProgressPercentage.ToString("0")%
+                                        </span>
+                                    </div>
+
+                                    <div class="progress"
+                                         style="height: 1rem;">
+
+                                        <div class="progress-bar bg-success"
+                                             style="width: @(TargetProgressPercentage)%">
+                                        </div>
+
+                                    </div>
+
+                                    <div class="text-muted small mt-2">
+                                        @TargetProgressText
+                                    </div>
+
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+            <div class="col-12 col-lg-7">
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-center
+                                    gap-3
+                                    mb-3">
+
+                            <div>
+                                <h2 class="h5 mb-1">
+                                    Weight history
+                                </h2>
+
+                                <small class="text-muted">
+                                    @Entries.Count recorded entries
+                                </small>
+                            </div>
+
+                            @if (Entries.Count > 0)
+                            {
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        @onclick="ClearHistoryAsync">
+
+                                    Clear
+                                </button>
+                            }
+
+                        </div>
+
+                        @if (Entries.Count == 0)
+                        {
+                            <div class="text-center py-5">
+
+                                <span class="bi
+                                             bi-clipboard2-pulse
+                                             display-5
+                                             text-muted">
+                                </span>
+
+                                <p class="text-muted mt-3 mb-0">
+                                    No weight entries recorded yet.
+                                </p>
+
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+
+                                <table class="table
+                                              table-striped
+                                              align-middle
+                                              mb-0">
+
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Weight</th>
+                                            <th>Change</th>
+                                            <th>Notes</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        @foreach (WeightEntry entry in Entries)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @entry.RecordedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm",CultureInfo.CurrentCulture)
+                                                </td>
+
+                                                <td class="fw-semibold">
+                                                    @entry.WeightKg.ToString("0.0") kg
+                                                </td>
+
+                                                <td>
+                                                    <span class="@GetEntryChangeCss(entry)">
+                                                        @GetEntryChangeText(entry)
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    @if (string.IsNullOrWhiteSpace(entry.Notes))
+                                                    {
+                                                        <span class="text-muted">—</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @entry.Notes
+                                                    }
+                                                </td>
+
+                                                <td class="text-end">
+                                                    <button type="button"
+                                                            class="btn
+                                                                   btn-sm
+                                                                   btn-outline-danger"
+                                                            title="Delete entry"
+                                                            @onclick="() => DeleteEntryAsync(entry.Id)">
+
+                                                        <span class="bi bi-trash"></span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+                        }
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
