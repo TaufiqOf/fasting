@@ -3,9 +3,10 @@ using Microsoft.Maui.Storage;
 
 namespace Fasting.Shared.Services;
 
-public sealed class MauiFastingStateStore : IFastingStateStore
+public sealed class MauiFastingStateStore : IFastingStateStore, IFastingHistoryStore
 {
     private const string StorageKey = "active_fasting_state";
+    private const string HistoryStorageKey = "fasting_history";
 
     private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);
@@ -46,6 +47,49 @@ public sealed class MauiFastingStateStore : IFastingStateStore
 
         Preferences.Default.Set(StorageKey, json);
 
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<FastingHistoryEntry>> LoadHistoryAsync()
+    {
+        try
+        {
+            string? json = Preferences.Default.Get<string?>(HistoryStorageKey, null);
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return Task.FromResult<IReadOnlyList<FastingHistoryEntry>>(
+                    Array.Empty<FastingHistoryEntry>());
+            }
+
+            IReadOnlyList<FastingHistoryEntry> history =
+                JsonSerializer.Deserialize<List<FastingHistoryEntry>>(json,JsonOptions) ?? new List<FastingHistoryEntry>();
+
+            return Task.FromResult(history);
+        }
+        catch
+        {
+            Preferences.Default.Remove(HistoryStorageKey);
+
+            return Task.FromResult<IReadOnlyList<FastingHistoryEntry>>(
+                Array.Empty<FastingHistoryEntry>());
+        }
+    }
+
+    public Task SaveHistoryAsync(
+        IReadOnlyList<FastingHistoryEntry> history)
+    {
+        ArgumentNullException.ThrowIfNull(history);
+
+        string json = JsonSerializer.Serialize(history, JsonOptions);
+        Preferences.Default.Set(HistoryStorageKey, json);
+
+        return Task.CompletedTask;
+    }
+
+    public Task ClearHistoryAsync()
+    {
+        Preferences.Default.Remove(HistoryStorageKey);
         return Task.CompletedTask;
     }
 

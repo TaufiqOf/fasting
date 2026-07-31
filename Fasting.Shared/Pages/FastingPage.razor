@@ -7,11 +7,6 @@
 
 @implements IDisposable
 
-<PageTitle>Fasting</PageTitle>
-
-<div class="container py-3">
-
-    <h1 class="mb-4">Fasting</h1>
 
     @if (!FastingManager.HasActiveCycle)
     {
@@ -160,6 +155,11 @@
                     @FinishLabel:
                     <strong>@FinishTimeText</strong>
                 </p>
+                <p class="mb-3">
+                    Escaped Time:
+                    <strong>@EscapedTimeText</strong>
+                </p>
+
 
                 <div class="progress"
                      role="progressbar"
@@ -171,17 +171,14 @@
 
                     <div class="progress-bar
                                 progress-bar-striped
-                                progress-bar-animated
-                                @(FastingManager.IsEating
-                                    ? "bg-success"
-                                    : "")"
-                         style="width: @(ProgressWidth)%">
+                                progress-bar-animated"
+                         style="width: @(ProgressWidth)%; background-color: @FastingManager.ProgressColor">
 
-                        @FastingManager.ProgressPercentage.ToString("0")%
-
+                 
                     </div>
+                    
                 </div>
-
+ 
                 <div class="text-center my-4">
 
                     @if (FastingManager.IsPhaseCompleted)
@@ -206,12 +203,16 @@
                         <div class="display-6 fw-bold">
                             @RemainingTimeText
                         </div>
+            
 
                         <div class="text-muted">
                             @RemainingLabel
                         </div>
+          
                     }
-
+                    <div class="text-muted">
+                        @FastingManager.FastingTip
+                    </div>
                 </div>
 
                 @if (FastingManager.IsFasting)
@@ -255,4 +256,66 @@
         </div>
     }
 
+
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+            <div>
+                <h5 class="card-title mb-1">Fasting history</h5>
+                <small class="text-muted">
+                    Completed fasts are saved on this device.
+                </small>
+            </div>
+
+            @if (History.Count > 0)
+            {
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        @onclick="ClearHistory">
+                    Clear history
+                </button>
+            }
+        </div>
+
+        @if (History.Count == 0)
+        {
+            <p class="text-muted mb-0">
+                No completed fasts yet.
+            </p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Duration</th>
+                            <th scope="col">Target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (FastingHistoryEntry entry in History)
+                        {
+                            <tr>
+                                <td>
+                                    @entry.EndedAt.ToLocalTime().ToString(
+                                        "dd MMM yyyy HH:mm",
+                                        CultureInfo.CurrentCulture)
+                                </td>
+                                <td>@entry.FastingTypeName</td>
+                                <td>@FormatHistoryDuration(entry.Duration)</td>
+                                <td>
+                                    <span class="badge @(entry.TargetReached ? "bg-success" : "bg-secondary")">
+                                        @(entry.TargetReached ? "Reached" : "Not reached")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
 </div>

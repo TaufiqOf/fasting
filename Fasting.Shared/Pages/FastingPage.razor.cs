@@ -2,6 +2,7 @@ using System.Globalization;
 using Fasting.Models;
 using Fasting.Shared.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Maui.Graphics;
 
 namespace Fasting.Shared.Pages;
 
@@ -71,7 +72,7 @@ public partial class FastingPage : IDisposable
                 "ddd, dd MMM yyyy HH:mm",
                 CultureInfo.CurrentCulture)
         ?? string.Empty;
-
+    
     public string FinishTimeText =>
         FastingManager.ExpectedFinishTime?
             .ToLocalTime()
@@ -82,7 +83,14 @@ public partial class FastingPage : IDisposable
 
     public string RemainingTimeText =>
         FormatDuration(FastingManager.RemainingTime);
+    
+    public string EscapedTimeText =>
+        FormatDuration(FastingManager.ElapsedTime);
 
+    public IReadOnlyList<FastingHistoryEntry> History =>
+        FastingManager.History;
+
+    
     protected override async Task OnInitializedAsync()
     {
         FastingManager.StateChanged +=
@@ -127,6 +135,11 @@ public partial class FastingPage : IDisposable
         CloseStartTimeEditor();
 
         await FastingManager.StartNextFastAsync();
+    }
+
+    private async Task ClearHistory()
+    {
+        await FastingManager.ClearHistoryAsync();
     }
 
     private async Task CancelEatingPeriod()
@@ -244,6 +257,9 @@ public partial class FastingPage : IDisposable
 
         _ = InvokeAsync(StateHasChanged);
     }
+
+    public static string FormatHistoryDuration(TimeSpan duration) =>
+        FormatDuration(duration);
 
     private static string FormatDuration(
         TimeSpan duration)

@@ -1,5 +1,5 @@
 using Fasting.Models;
-
+using Microsoft.Maui.Graphics;
 using FastingSession = Fasting.Models.Fasting;
 
 namespace Fasting.Shared.Services;
@@ -7,6 +7,9 @@ namespace Fasting.Shared.Services;
 public sealed class FastingManager : IDisposable
 {
     private readonly IFastingStateStore _stateStore;
+    private readonly IFastingHistoryStore? _historyStore;
+    private readonly FastingTipHelper _fastingTipHelper;
+    private readonly List<FastingHistoryEntry> _history = [];
 
     private CancellationTokenSource? _timerCancellation;
 
@@ -16,9 +19,13 @@ public sealed class FastingManager : IDisposable
     public FastingManager(IFastingStateStore stateStore)
     {
         _stateStore = stateStore;
+        _historyStore = stateStore as IFastingHistoryStore;
+        _fastingTipHelper = new FastingTipHelper();
     }
 
     public event Action? StateChanged;
+
+    public IReadOnlyList<FastingHistoryEntry> History => _history;
 
     public CycleState State { get; private set; } =
         CycleState.None;
@@ -122,6 +129,8 @@ public sealed class FastingManager : IDisposable
         }
     }
 
+    public string FastingTip => _fastingTipHelper.GetTip(ElapsedTime.TotalSeconds);
+    public string ProgressColor => _fastingTipHelper.GetColor(ElapsedTime.TotalSeconds);
     public double ProgressPercentage
     {
         get
@@ -160,6 +169,16 @@ public sealed class FastingManager : IDisposable
 
         _initialized = true;
         CurrentTime = DateTimeOffset.UtcNow;
+
+        if (_historyStore is not null)
+        {
+            IReadOnlyList<FastingHistoryEntry> savedHistory =
+                await _historyStore.LoadHistoryAsync();
+
+            _history.Clear();
+            _history.AddRange(
+                savedHistory.OrderByDescending(item => item.EndedAt));
+        }
 
         FastingPersistedState? savedState =
             await _stateStore.LoadAsync();
@@ -276,6 +295,8 @@ public sealed class FastingManager : IDisposable
 
         CurrentFasting.EndedAt = endedAt;
 
+        await AddHistoryEntryAsync(CurrentFasting);
+
         CurrentEating = new Eating
         {
             Type = type,
@@ -381,6 +402,43 @@ public sealed class FastingManager : IDisposable
         NotifyStateChanged();
 
         return true;
+    }
+
+    public async Task ClearHistoryAsync()
+    {
+        _history.Clear();
+
+        if (_historyStore is not null)
+        {
+            await _historyStore.ClearHistoryAsync();
+        }
+
+        NotifyStateChanged();
+    }
+
+    private async Task AddHistoryEntryAsync(
+        FastingSession fasting)
+    {
+        if (fasting.EndedAt is null)
+        {
+            return;
+        }
+
+        _history.Insert(
+            0,
+            new FastingHistoryEntry
+            {
+                FastingTypeId = fasting.Type.Id,
+                FastingTypeName = fasting.Type.Name,
+                StartedAt = fasting.StartedAt,
+                EndedAt = fasting.EndedAt.Value,
+                TargetHours = fasting.Type.FastingHours
+            });
+
+        if (_historyStore is not null)
+        {
+            await _historyStore.SaveHistoryAsync(_history);
+        }
     }
 
     public async Task ResetCycleAsync()

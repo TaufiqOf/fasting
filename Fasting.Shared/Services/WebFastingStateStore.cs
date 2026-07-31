@@ -4,9 +4,10 @@ using Microsoft.JSInterop;
 
 namespace Fasting.Shared.Services;
 
-public sealed class WebFastingStateStore : IFastingStateStore
+public sealed class WebFastingStateStore : IFastingStateStore, IFastingHistoryStore
 {
     private const string StorageKey = "active_fasting_state";
+    private const string HistoryStorageKey = "fasting_history";
 
     private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);
@@ -62,6 +63,56 @@ public sealed class WebFastingStateStore : IFastingStateStore
             "localStorage.setItem",
             StorageKey,
             json);
+    }
+
+    public async Task<IReadOnlyList<FastingHistoryEntry>> LoadHistoryAsync()
+    {
+        try
+        {
+            string? json =
+                await _jsRuntime.InvokeAsync<string?>(
+                    "localStorage.getItem",
+                    HistoryStorageKey);
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return Array.Empty<FastingHistoryEntry>();
+            }
+
+            return JsonSerializer.Deserialize<List<FastingHistoryEntry>>(
+                       json,
+                       JsonOptions)
+                   ?? new List<FastingHistoryEntry>();
+        }
+        catch (JSException)
+        {
+            return Array.Empty<FastingHistoryEntry>();
+        }
+        catch (JsonException)
+        {
+            await ClearHistoryAsync();
+            return Array.Empty<FastingHistoryEntry>();
+        }
+    }
+
+    public async Task SaveHistoryAsync(
+        IReadOnlyList<FastingHistoryEntry> history)
+    {
+        ArgumentNullException.ThrowIfNull(history);
+
+        string json = JsonSerializer.Serialize(history, JsonOptions);
+
+        await _jsRuntime.InvokeVoidAsync(
+            "localStorage.setItem",
+            HistoryStorageKey,
+            json);
+    }
+
+    public async Task ClearHistoryAsync()
+    {
+        await _jsRuntime.InvokeVoidAsync(
+            "localStorage.removeItem",
+            HistoryStorageKey);
     }
 
     public async Task ClearAsync()

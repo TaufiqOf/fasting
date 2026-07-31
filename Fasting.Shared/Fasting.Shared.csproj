@@ -22,6 +22,9 @@
       <Reference Include="Microsoft.Maui.Essentials">
         <HintPath>..\..\..\.nuget\packages\microsoft.maui.essentials\10.0.90\lib\net10.0-android36.0\Microsoft.Maui.Essentials.dll</HintPath>
       </Reference>
+      <Reference Include="Microsoft.Maui.Graphics">
+        <HintPath>..\..\..\.nuget\packages\microsoft.maui.graphics\10.0.90\lib\net10.0-android36.0\Microsoft.Maui.Graphics.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
