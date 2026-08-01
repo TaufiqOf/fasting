@@ -14,18 +14,14 @@ public sealed class WebWeightHistoryStore : IWeightHistoryStore
     private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);
 
-    public WebWeightHistoryStore(
-        IJSRuntime jsRuntime)
+    public WebWeightHistoryStore(IJSRuntime jsRuntime)
     {
         _jsRuntime = jsRuntime;
     }
 
     public async Task<IReadOnlyList<WeightEntry>> LoadAsync()
     {
-        string? json =
-            await _jsRuntime.InvokeAsync<string?>(
-                "localStorage.getItem",
-                StorageKey);
+        string? json = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", StorageKey);
 
         if (string.IsNullOrWhiteSpace(json))
         {
@@ -34,10 +30,7 @@ public sealed class WebWeightHistoryStore : IWeightHistoryStore
 
         try
         {
-            return JsonSerializer.Deserialize<List<WeightEntry>>(
-                       json,
-                       JsonOptions)
-                   ?? [];
+            return JsonSerializer.Deserialize<List<WeightEntry>>(json, JsonOptions) ?? [];
         }
         catch (JsonException)
         {
@@ -49,22 +42,12 @@ public sealed class WebWeightHistoryStore : IWeightHistoryStore
         IReadOnlyList<WeightEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
-
-        string json =
-            JsonSerializer.Serialize(
-                entries,
-                JsonOptions);
-
-        await _jsRuntime.InvokeVoidAsync(
-            "localStorage.setItem",
-            StorageKey,
-            json);
+        string json = JsonSerializer.Serialize(entries, JsonOptions);
+        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
     }
 
     public async Task ClearAsync()
     {
-        await _jsRuntime.InvokeVoidAsync(
-            "localStorage.removeItem",
-            StorageKey);
+        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", StorageKey);
     }
 }

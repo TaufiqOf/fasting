@@ -21,7 +21,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<FastingManager>();
         builder.Services.AddSingleton<IFastingStateStore, MauiFastingStateStore>();
         builder.Services.AddScoped<IUserProfileStore, UserProfileStore>();
-
+        builder.Services.AddSingleton<IWeightHistoryStore, MauiWeightHistoryStore>();
         builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
